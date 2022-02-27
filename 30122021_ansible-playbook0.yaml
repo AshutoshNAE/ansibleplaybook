@@ -1,0 +1,686 @@
+
+#----------------------------
+# Recording_Day=12-feb-2022
+#----------------------------
+
+#comments!!
+# This file is for accumulative play and tested on topology
+
+# 1.0 Very basic play - Understand the each line step by step.
+---
+
+...
+
+
+# 1.1
+---
+- name: This play for very first code
+...
+
+
+# 1.2
+# Discuss the challenge between Hosts(Linux/Unix or window) & Network devices(Routers, switch etc.)
+---
+- name: Lets add multiple host list !!!
+  hosts: Hosts Router
+...
+
+
+# 1.3
+---
+- name: This is very first code !!!
+  hosts: all
+...
+
+
+
+# 1.4
+# Do lab test and get updated for "gather_facts" key with false or no __key-values.
+---
+- name: Lsts add single list of hosts !!!
+  hosts: Routers
+  gather_facts: false
+
+  gather_facts: no
+...
+
+
+# 1.5
+# Understand the TASK, REGISTER, and DEBUG
+---
+- name: Lets work with TASK
+  hosts: Routers
+  gather_facts: false
+
+  tasks:
+    - name: Get ARP Information
+      raw: show ip arp
+
+      register: arpOut
+
+    - name: Print the Result
+      debug: var=arpOut.stdout_lines
+...
+
+
+
+# 2.0 !!! For Rack having "ssh -oKexAlgorithms=+" issue !!!
+# Need to creat ~/.ssh/config file
+# Understand the "/etc/ssh/ssh_config"
+# Understand the wildcard "?, *," example: {{ Hosts * }}
+
+student@linux1  $cat ~/.ssh/config
+# This is the ssh configuration which we need to run network devices for ansible
+Host 172.16.31.4?
+KexAlgorithms=+diffie-hellman-group1-sha1
+
+Host 172.16.31.3? s?
+KexAlgorithms=+diffie-hellman-group1-sha1
+
+student@linux1  $
+
+------------EXAMPLE---------------
+
+ssh -oKexAlgorithms=+diffie-hellman-group1-sha1 -c aes128-cbc -l ashu 172.16.31.49
+
+kashu@kashu:~$ ssh -oKexAlgorithms=+diffie-hellman-group1-sha1 -c aes128-cbc -l ashu 172.16.31.49
+
+kashu@kashu:~$ ssh -l ashu 172.16.31.49
+Unable to negotiate with 172.16.31.49 port 22: no matching key exchange method found. Their offer: diffie-hellman-group1-sha1
+kashu@kashu:~$ ssh -oKexAlgorithms=+diffie-hellman-group1-sha1 -c aes128-cbc ashu@172.16.31.49
+
+$ cat ~/.ssh/config
+
+Host 172.16.31.3? 
+KexAlgorithms=+diffie-hellman-group1-sha1 
+Ciphers 3des-cbc  
+
+Host 172.16.31.4? 
+KexAlgorithms=+diffie-hellman-group1-sha1 
+Ciphers 3des-cbc  
+
+Host s?? 
+KexAlgorithms=+diffie-hellman-group1-sha1 
+Ciphers 3des-cbc
+
+
+---------------------------
+
+
+
+# 3.0 Play for iso_command and iso_config modules !!!
+#
+# https://docs.ansible.com/ansible/latest/collections/index_module.html#cisco-ios
+#
+# https://docs.ansible.com/ansible/2.5/modules/modules_by_category.html
+#
+# https://docs.ansible.com/ansible/2.5/modules/ios_command_module.html#ios-command-module
+#
+# https://docs.ansible.com/ansible/latest/
+# https://docs.ansible.com/ansible/latest/collections/index.html#list-of-collections
+# https://docs.ansible.com/ansible/latest/collections/cisco/ios/index.html#plugins-in-cisco-ios
+#
+# https://docs.ansible.com/ansible/2.5/modules/ios_command_module.html#ios-command-module
+#
+#
+# https://docs.ansible.com/ansible/2.5/modules/ios_command_module.html?highlight=network_cli
+# https://docs.ansible.com/ansible/2.5/modules/ios_config_module.html?highlight=network_cli
+# https://docs.ansible.com/ansible/2.5/modules/ios_facts_module.html?highlight=network_cli
+#
+#
+
+# https://docs.ansible.com/ansible/2.5/plugins/connection/network_cli.html
+# https://docs.ansible.com/ansible/latest/collections/ansible/netcommon/network_cli_connection.html
+
+# How network automation  is different?
+# "connection" keyword, Multiple communication protocols, Understand ansible netcommon, 
+# what is "local" key-value, what is "network_cli" key-value, what is "netconf" key-value, what is "httpapi" key-value, 
+# What is persistent?, what is jija2 template?, 
+
+# Let start the code
+#Q) What is connection local in Ansible?
+#Ans) It is to execute the tasks locally on the same host (i.e., the controller) where the playbook is run.
+# From the documentation, It may be useful to use a playbook locally, rather than by connecting over SSH
+
+---
+- name: Running with multiple command for Cisco
+  hosts: Routers
+  gather_facts: false
+  connection: local
+
+  tasks:
+    - name: Lets check out with show ver & show arp
+      ios_command:
+        commands:
+          - show arp
+          - show version
+
+      register: commandOut
+
+    -   debug: var=commandOut.stdout_lines
+...
+
+
+# 3.1
+# Q) What is Network_cli?
+# Ans) Synopsis. This connection plugin provides a connection to remote devices over the SSH and implements a CLI shell.
+# This connection plugin is typically used by network devices for sending and receiving CLi commands to network devices.
+# https://docs.ansible.com/ansible/latest/network/getting_started/network_differences.html
+# what is Persistent?
+# __determined to continue doing something even though people say that you are wrong or that you cannot do it
+# __lasting for a long time or happening often
+
+---
+- name: Running with multiple command for Cisco
+  hosts: Routers
+  gather_facts: false
+  connection: network_cli
+
+  tasks:
+    - name: Lets check out with show ver & show arp
+      ios_command:
+        commands:
+          - show arp
+          - show version
+
+      register: commandOut
+
+    -   debug: var=commandOut.stdout_lines
+...
+
+#----------------------------
+# Recording_Day=19-feb-2022
+#----------------------------
+
+# In order to resolve isse for from 'connection: local' to 'connection: network_cli'
+# https://docs.ansible.com/ansible/latest/network/getting_started/network_differences.html
+
+student@linux1  $
+student@linux1  $cat ./hosts
+# This is NAE Test
+[Routers]
+R1
+R2
+R3
+
+[Hosts]
+GenSer
+GenSys
+SupSer
+SupSys
+
+[l2sw]
+s1
+s2
+s3
+s4
+
+[all:vars]
+ansible_network_os=ios
+
+student@linux1
+
+student@linux1  $ansible-playbook -i ./hosts lab1-testplay.yaml -u ashu -k
+
+
+###
+# 4.0 Saving output to a file !!!
+#Q) What is Ansible Jinja2 template?
+#Ans) Jinja2 templates are simple template files that store variables that can change from time to time.
+# When Playbooks are executed, these variables get replaced by actual values defined in Ansible Playbooks.
+# This way, templating offers an efficient and flexible solution to create or alter configuration file with ease.
+#Lets code
+---
+- name: Pre & Post Preparartion to the folder
+  hosts: l2sw
+  gather_facts: false
+  connection: network_cli
+
+  tasts:
+    - name: Pre Captured for multiple command
+      ios_command:
+        commands:
+          - show running
+          - show int status
+          - show ip int brief
+
+      register: commandOut
+
+    - name: Save pre capture output into a folder
+      copy:
+        content: "{{commandOut.stdout[0]}}"
+        dest: "~/Backup/{{inventory_hostname}}.txt"
+...
+
+##
+# 4.1 Saving Output to a folder for multiple command !!!
+# Understand ARRAY concept "[0], [1], [2], [0][1]" & nullify the []
+
+---
+- name: Pre & Post Preparartion to the folder
+  hosts: l2sw
+  gather_facts: false
+  connection: network_cli
+
+  tasts:
+    - name: Pre Captured for multiple command
+      ios_command:
+        commands:
+          - show running
+          - show int status
+          - show ip int brief
+
+      register: commandOut
+
+    - name: Save pre capture output into a folder
+      copy:
+        content: "{{commandOut.stdout[1]}}"
+        dest: "~/Backup/{{inventory_hostname}}.txt"
+...
+
+
+
+##
+# 4.2
+# Understand the variable keyword "vars"
+# vars= any variable parameters which need to use Jinja2 template to call 'vars'
+#
+
+---
+- name: Array Test for Output Captured
+  hosts: l2sw
+  gather_facts: false
+  connection: network_cli
+
+  vars:
+    command_list:
+      - show cdp neigh
+      - show clock
+      - show arp
+      - show ip int brief
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      ios_command:
+        commands: "{{ command_list }}"
+      register: showOut
+
+    - name: Copy the content into a file
+      copy:
+        content: "{{ showOut.stdout[0] }}"
+        dest: "~/Backup/{{inventory_hostname}}.txt"
+...
+
+
+
+##
+# 4.3
+# Nullify the ARRAY 
+# Use of new filter "to_nice_json"
+#
+
+---
+- name: Array Test for Output Captured
+  hosts: l2sw
+  gather_facts: false
+  connection: network_cli
+
+  vars:
+    command_list:
+      - show cdp neigh
+      - show clock
+      - show arp
+      - show ip int brief
+
+  tasks:
+    - name: Run the SHOW commands and save output
+      ios_command:
+        commands: "{{ command_list }}"
+      register: showOut
+
+    - name: Copy the content into a file
+      copy:
+        content: "{{ showOut.stdout_lines | to_nice_json }}"
+        dest: "~/Backup/{{inventory_hostname}}.txt"
+...
+
+
+
+
+--------------------------------------------------------------
+
+###
+## 5.0 How can I avoid warnings from every network devices?
+# [WARNING]: Platform linux on host raspi6.local is
+#       using the discovered Python interpreter at /usr/bin/python,
+# but future installation of another Python interpreter could change this.
+#
+# In the ansible config file on your ansible controlled host... add the following line
+
+vim ~/.ansible.cfg
+
+[defaults]
+interpreter_python=auto_silent
+
+
+# this is very useful to avoid [WARNING]:
+
+-------------------------------------------------------------
+
+
+
+
+###
+## 6.0 network_cli vs local.
+# Privileged Exc Commands in Playbooks
+#
+# https://docs.ansible.com/ansible/2.5/plugins/connection/network_cli.html
+#
+# https://docs.ansible.com/ansible/2.5/plugins/connection/
+# https://docs.ansible.com/ansible/2.5/plugins/connection/local.html
+# https://docs.ansible.com/ansible/2.5/plugins/connection/netconf.html
+#
+# let's code
+---
+- name: Checks with Privileged Exc
+  hosts: l2sw
+  gather_facts: false
+  connection: local
+
+  tasks:
+    - name: Run non-privilege command
+      ios_command:
+        commands:
+          - show arp
+          - show cdp neigh
+      register: nonPrivCmdOut
+
+    -   debug: var=nonPrivCmdOut.stdout_lines
+    - name: Get Save Pre & Post
+      copy:
+        content: "{{nonPrivCmdOut.stdout_lines | to_nice_json}}"
+        dest: "~/Backup/{{inventory_hostname}}.txt"
+...
+
+
+
+
+## 6.1 this example for "local" method to use "provider"
+# username & password is encryted
+# Multiple "vars" key-value
+#
+---
+- name: Checks with Privileged Exc
+  hosts: l2sw
+  gather_facts: false
+  connection: local
+
+  vars:
+    login:
+      username: admin
+      password: admin
+      auth_pass: ccie
+      authorize: true
+
+    command_list:
+      - show running
+      - show run | inc username
+
+  tasks:
+    - name: Run privilege command
+      ios_command:
+        provider: "{{ login }}"
+        commands: "{{ command_list }}"
+
+      register: PrivCmdOut
+
+    -   debug: var=PrivCmdOut.stdout_lines
+    - name: Get Save Pre & Post
+      copy:
+        content: "{{nonPrivCmdOut.stdout_lines | to_nice_json}}"
+        dest: "~/Backup/{{inventory_hostname}}.txt"
+...
+
+
+
+
+## 6.2
+# username & password is not encryted.
+# Well defined "vars" __persistant__
+#
+
+---
+- name: Checks with Privileged Exc
+  hosts: l2sw
+  gather_facts: false
+  connection: network_cli
+  become: yes
+  become_method: enable
+
+  vars:
+    ansible_user: admin
+    ansible_ssh_pass: admin
+    ansible_become_pass: ccie
+    ansible_network_os: ios
+
+    command_list:
+      - show running
+      - show run | inc username
+
+  tasks:
+    - name: Run privilege command
+      ios_command:
+        commands: "{{ command_list }}"
+
+      register: PrivCmdOut
+
+    -   debug: var=PrivCmdOut.stdout_lines
+    - name: Get Save Pre & Post
+      copy:
+        content: "{{nonPrivCmdOut.stdout_lines | to_nice_json}}"
+        dest: "~/Backup/{{inventory_hostname}}.txt"
+...
+
+
+
+
+###
+## 7.0 Behavioral inventory parameters
+#
+ansible_host - the name of the host to connect to
+ansible_port - the ssh port number, if not 22
+ansible_user - the default ssh username to use
+
+ansible_ssh_pass - the ssh password to use
+ansible_ssh_private_key_file - private key file used by ssh
+
+ansible_become - equivalent to "ansible_sudo" or "ansible_su", allows to force privilege escalation
+ansible_become_method - allows to set privilege escalation method
+ansible_become_user - equivalent to "ansible_sudo_user" or "ansible_su_user", allows to set the user you become through privilege escalation.
+ansible_become_pass - equivalent to "ansible_sudo_pass" or "ansible_su_pass", allows you to set the privilege escalation password.
+
+ansible_network_os - new in Ansible 2.5, used with network_cli of "netconf".local
+
+
+#
+# 7.1 Example:
+#
+---
+- name: behavioral inventory parameters
+  hosts: l2sw
+  gather_facts: false
+  connection: network_cli
+
+  vars:
+    ansible_become: yes
+    ansible_become_method: enable
+
+    ansible_user: admin
+    ansible_ssh_pass: admin
+    ansible_become_pass: ccie
+    ansible_network_os: ios
+
+    command_list:
+      - show running
+      - show runn | inc username
+
+  tasks:
+    - name: Lets run privilege command.
+      ios_command:
+        commands: "{{ command_list }}"
+      register: PrivCmdOut
+
+    - name: save the results
+      copy:
+        content: "{{ PrivCmdOut.stdout_lines | to_nice_json }}"
+        dest: "~/Backup/{{inventory_hostname}}.txt"
+...
+
+
+
+##
+# 7.2 cat ./hosts1
+#
+# sudo vim ./hosts1
+#
+# How to integrate variables to inventory file !!! This is called Behavioral inventory parameters
+#
+
+ansible_host=192.168.122.10 ansible_port=22 ansible_user=admin ansible_become=yes ansible_become_method=enable ansible_ssh_pass=admin ansible_become_pass=ccie ansible_network_os=ios
+
+[Routers]
+192.168.122.10 ansible_user=admin ansible_become=yes ansible_become_method=enable ansible_ssh_pass=admin ansible_become_pass=ccie ansible_network_os=ios
+192.168.122.20 ansible_user=admin ansible_become=yes ansible_become_method=enable ansible_ssh_pass=admin ansible_become_pass=ccie ansible_network_os=ios
+192.168.122.30 ansible_user=admin ansible_become=yes ansible_become_method=enable ansible_ssh_pass=admin ansible_become_pass=ccie ansible_network_os=ios
+
+[Rx]
+R1 ansible_user=admin ansible_become=yes ansible_become_method=enable ansible_ssh_pass=admin ansible_become_pass=ccie ansible_network_os=ios
+R2 ansible_user=admin ansible_become=yes ansible_become_method=enable ansible_ssh_pass=admin ansible_become_pass=ccie ansible_network_os=ios
+R3 ansible_user=admin ansible_become=yes ansible_become_method=enable ansible_ssh_pass=admin ansible_become_pass=ccie ansible_network_os=ios
+
+
+# Lets code
+---
+- name: Behavioral inventory parameters
+  hosts: l2sw
+  gather_facts: false
+  connection: network_cli
+
+  vars:
+    command_list:
+      - show running
+      - show runn | inc username
+
+  tasks:
+    - name: Lets run privilege command.
+      ios_command:
+        commands: "{{ command_list }}"
+      register: PrivCmdOut
+
+    - name: save the results
+      copy:
+        content: "{{ PrivCmdOut.stdout_lines | to_nice_json }}"
+        dest: "~/Backup/{{inventory_hostname}}.txt"
+...
+
+
+
+##
+# 7.3
+#
+# cat ./hosts2
+#
+# How to manage inventory with set_class or sub-set class 
+#
+
+[Routers]
+192.168.122.10
+192.168.122.20
+192.168.122.30
+
+[Rx]
+R1
+R2
+R3
+
+[Routers:vars]
+ansible_user=admin
+ansible_port=22
+ansible_become=yes
+ansible_ssh_pass=admin
+ansible_become_pass=ccie
+ansible_become_method=enable
+ansible_network_os=ios
+
+# Run the code:
+ansible-playbook -i ./hosts2 lab1-testplay.yaml
+
+
+
+
+##
+# 7.4 If you have different enable pass, you can locally override it.
+#
+# cat ./hosts2
+#
+# Global 'vars' vs. Local 'vars'
+#
+
+
+[Routers]
+192.168.122.10 ansible_become_pass=ccnp
+192.168.122.20
+192.168.122.30
+
+[Rx]
+R1
+R2
+R3
+
+[Routers:vars]
+ansible_user=admin
+ansible_port=22
+ansible_become=yes
+ansible_ssh_pass=admin
+ansible_become_pass=ccie
+ansible_become_method=enable
+ansible_network_os=ios
+
+# Run the code:
+ansible-playbook -i ./hosts2 lab1-testplay.yaml
+
+
+
+##
+# 7.5 Let introduce the Global rules
+#
+# cat ./hosts2
+#
+
+[all:vars]
+ansible_port=22
+
+[Routers]
+192.168.122.10 ansible_become_pass=ccnp
+192.168.122.20
+192.168.122.30
+
+[Rx]
+R1
+R2
+R3
+
+[Routers:vars]
+ansible_user=admin
+ansible_port=22
+ansible_become=yes
+ansible_ssh_pass=admin
+ansible_become_pass=ccie
+ansible_become_method=enable
+ansible_network_os=ios
+
+# Run the code:
+ansible-playbook -i ./hosts2 lab1-testplay.yaml
+
+
+! Thank you and all upcoming code can refer to "31122021_ansible-playbook0.yaml"
