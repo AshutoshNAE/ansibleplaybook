@@ -1,0 +1,485 @@
+At very first we need to study data modeling "yaml, xml, json" and their convertions.
+!
+https://www.ansible.com/
+https://docs.ansible.com/
+https://docs.ansible.com/ansible/latest/index.html
+https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-ansible-on-ubuntu
+
+
+!
+What is ansible
+-It's written in Python and is OpenSource under GPL Licence.
+-One Control Node (Installed ANSIBLE) and Many Managed Nodes (Network Devices + Servers)
+-https://docs.ansible.com/ansible/latest/index.html
+-Ansible is an IT automation tool. It can configure systems, deploy software, and orchestrate more advanced IT tasks such as continuous deployments or zero downtime rolling updates.
+-Usage of OpenSSH for transport.
+-Ansible manages machines in an agent-less manner.
+-Ansible is decentralized–it relies on your existing OS credentials to control access to remote machines. If needed, Ansible can easily connect with Kerberos, LDAP, and other centralized authentication management systems.
+-Ansible releases a new major release approximately twice a year.
+-You can learn more at AnsibleFest, the annual event for all Ansible contributors, users, and customers hosted by Red Hat. AnsibleFest is the place to connect with others, learn new skills, and find a new friend to automate with.
+--https://www.ansible.com/ansiblefest
+-- ashutoshtechstudy@gmail.com, xyzP@$$123.., 
+
+!
+DevOps Tools:
+-Atlassian <Jira>
+-DataDog <Both DataDog and CloudWatch are monitoring tools that help improve application and system performance. But CloudWatch only monitors AWS resources and the applications that run on them. On the other hand, using DataDog, you can monitor applications using multiple cloud services.>
+-Chocolatey <Chocolatey is software management automation for Windows that wraps installers, executables, zips, and scripts into compiled packages. AZURE>
+-Splunk <Splunk Phantom> <log management tool> <Splunk is not strictly an APM tool.> <Application Performance Management (APM) Tool>
+
+!
+Cloud:
+-AWS, Amazon Web Services, 
+-Azure, 
+-Google Cloud Platform, 
+-OpenStack.
+
+!
+GittHub, GitLab, BitBucket, 
+-Public & Private Cloud
+-Licence and OpenSource
+--GPL
+--MIT
+
+============================================================================================
+!
+Ansible Components
+-Inventory, https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html
+--https://docs.ansible.com/ansible/latest/index.html, https://docs.ansible.com/ansible/latest/network/getting_started/first_inventory.html
+--https://docs.ansible.com/ansible/latest/
+--
+
+-Modules, https://docs.ansible.com/ansible/latest/collections/cisco/ios/?extIdCarryOver=true&sc_cid=701f2000001OH6uAAG
+-https://docs.ansible.com/ansible/latest/collections/cisco/ios/ios_config_module.html#ansible-collections-cisco-ios-ios-config-module
+
+
+-Tasks, 
+--https://docs.ansible.com/ansible/latest/
+
+-Playbooks
+--https://docs.ansible.com/ansible/latest/
+--You can execute a single task once with an ad hoc command.
+--Ordered lists of tasks, saved so you can run those tasks in that order repeatedly. Playbooks can include variables as well as tasks. Playbooks are written in YAML and are easy to read, write, share and understand.
+
+
+-YAML, YAML is a data serialization language that is often used for writing configuration files. 
+--Depending on whom you ask, YAML stands for yet another markup language or YAML
+
+
+============================================================================================
+
+Installation Ubuntu:
+https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#installing-ansible-on-ubuntu
+
+$ sudo apt update
+$ sudo apt install software-properties-common
+$ sudo add-apt-repository --yes --update ppa:ansible/ansible
+$ sudo add-apt-repository ppa:ansible/ansible
+$ sudo apt update
+$ sudo apt install ansible
+
+=============================================
+Inventory and ansible.cfg Files:
+! 
+Basic Checks:
+	ansible --version
+	ansible localhost -m ping
+!
+ansible --version
+ls /etc/ansible
+ls -l /etc/ansible
+cat /etc/ansible/hosts
+cat /etc/ansible/ansible.cfg
+!
+ansible --list-hosts all
+
+
+head <Default 10 line> /etc/ansible/ansible.cfg
+tail <Default 10 line> /etc/ansible/ansible.cfg
+head -20 /etc/ansible/ansible.cfg
+tail -10 /etc/ansible/ansible.cfg
+
+less /etc/ansible/ansible.cfg
+more /etc/ansible/ansible.cfg
+
++++++++++++++++++++
+!
+ansible --version
+ansible --list-hosts all
+ansible localhost -m ping
+
++++++++++++++++++++++++++++++++++
+ansible.builtin.raw – Executes a low-down and dirty command
+https://docs.ansible.com/ansible/latest/collections/ansible/builtin/raw_module.html
+!
+
+ansible <192.168.xx.10> -m raw -a "show version" -u ashu -k
+
+more /etc/hosts
+more /etc/hostname
+
+!!! more /etc/ansible/ansible.cfg 
+!
+
+[defaults]
+# "# follow by single space" are comments
+# "# follow by immediate statements or bottom of the paragram are attribute for Ansible"
+inventory      = /etc/ansible/hosts
+host_key_checking = False
+timeout = 5
+deprecation_warnings = false
+
+[ssh_connection]
+
+[persistent_connection]
+
+[selinux]
+
+[privilege_escalation]
+
+[paramiko_connection]
+
+[accelerate]
+
+[colors]
+
+[diff]
+
+!!! Ad-hoc command:
+!!!!!!!!!!!! To run ad-hoc command, need to install ssh.
+!
+SSH Configuration for Routers & Switches.
+
+Set Clock:
+	show clock
+	#clock set !!! that is manual one !
+	(config)# clock timezone IST 5 30  !!! Set only Timezone and enjoy !
+!
+Hostname:
+SW2950_Sw3#conf ter
+ip domain-name CcieTestLab.com
+
+username ashu privilege 15 secret ashu1234
+
+do show crypto key mypubkey rsa
+crypto key generate rsa
+
+
+line vty 0 4
+password ccnp
+login local
+transport input all
+!!!!!!!!!!!!!!!!!!!!!
+!
+ansible --list-hosts all
+!
+ansible <192.168.122.100> -m raw -a "show version" -u ashu -k
+!
+!!! uncomment the IP Address in /etc/ansible/hosts and check out the result.
+ansible <192.168.122.100> -m raw -a "show version" -u ashu -k
+!
+
+https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html
+
+!!! Hosts
+ansible <192.168.56.11 or .12> -m raw -a "date" -u ashu -k
+
+
+!!! Use Name resolution for creating ansible hosts inventory.
+cat /etc/hosts
+
+!!! Use explicitly inventory file:
+ansible Routers -i ./hosts -m raw -a "show run" -u ashu -k
+
+!!! 
+Ad-Hoc commands can be used to do quick and simple things like. 
+	-checking the logs
+	-checking if a process is running
+	-installing a package on a list of servers
+
+Playbooks are used for big deployments, orchestration or system configuration
+
+We use the ansible command to run an ad-hoc command and the ansible-playbook command to run a playbook.
+
+Both ad-hoc commands and playbooks use modules to perform different tasks.
+
+Modules are units of code that do the actual work in Ansible.
+
+Example:
+ansible 192.168.56.11 -m shell -a "uname -a" -u ashu -k
+
+ansible 192.168.56.12 -m raw -a "cat /etc/timezone" -u ashu -k
+
+!!! How to Display General System Information:
+( uname ) To display system information, use the uname command. Displays the operating system name as well as the system node name, operating system release, operating system version, hardware name, and processor type.
+!
+
+!! Ansible ad-hoc Commands:
+Syntax:
+ansible <hosts> [-m <module_name>] -a <"arguments"> -u <username> [-k] [-K] [--become]
+
+	-command
+	-shell
+	-raw
+	-setup
+	-file
+	-copy
+	-apt
+	-user
+	-service
+
+!
+
+!!!
+dpkg --get-selections | grep nginx
+
+What is NGINX used for?
+NGINX is open source software for web serving, reverse proxying, caching, load balancing, media streaming, and more. It started out as a web server designed for maximum performance and stability.
+
+854105
+
+=====================================================================
+!!!!!!!!!!!!!!!! ashu Class !!!!!!!!!!!!!!!!!!!!!
+
+Ansible Ad Hoc commands part1:
+==============================
+
+root@NetworkAutomation-1:~# ansible S1 -m raw -a "show version" -u ashu -k
+
+https://docs.ansible.com/ansible/latest/modules.html
+https://docs.ansible.com/ansible/latest/modules_by_category.html
+https://docs.ansible.com/ansible/latest/raw_module.html
+
+
+
+Ansible Ad Hoc commands part2:
+==============================
+
+root@NetworkAutomation-1:~# ansible S1 -m raw -a "show version" -u ashu -k
+
+root@NetworkAutomation-1:~# ansible S1 -m raw -a "show run" -u ashu -k
+
+root@NetworkAutomation-1:~# ansible gns3-core -i ./gns3hosts -m raw -a "show version" -u ashu -k
+
+root@NetworkAutomation-1:~# ansible gns3-core -i ./gns3hosts -m raw -a "show version" -u ashu -k | grep flash0
+
+root@NetworkAutomation-1:~# ansible gns3-core -i ./gns3hosts -m raw -a "show version" -u ashu -k | grep 'SUCCESS\|Software'
+
+root@NetworkAutomation-1:~# ansible gns3-core -i ./gns3hosts -m raw -a "show version" -u ashu -k | grep 'SUCCESS\|Version'
+
+root@NetworkAutomation-1:~# ansible gns3-core -i ./gns3hosts -m raw -a "show run" -u ashu -k | grep 'username'
+
+root@NetworkAutomation-1:~# ansible gns3-core -i ./gns3hosts -m raw -a "show run" -u ashu -k | grep 'SUCCESS\|username'
+
+
+https://docs.ansible.com/ansible/latest/modules.html
+https://docs.ansible.com/ansible/latest/modules_by_category.html
+https://docs.ansible.com/ansible/latest/raw_module.html
+
+
+Ansible Ad Hoc commands part3:
+==============================
+
+root@NetworkAutomation-1:~# ansible gns3-core -i ./gns3hosts -m raw -a "show run" -u ashu -k | grep 'username' > usernames.txt
+
+root@NetworkAutomation-1:~# cat usernames.txt
+
+root@NetworkAutomation-1:~# ansible gns3-core -i ./gns3hosts -m raw -a "show run" -u ashu -k > shrun.txt
+
+root@NetworkAutomation-1:~# cat shrun.txt
+
+root@NetworkAutomation-1:~# more shrun.txt
+
+root@NetworkAutomation-1:~# ansible gns3-core -i ./gns3hosts -m raw -a "show ver" -u ashu -k > shver.txt
+
+root@NetworkAutomation-1:~# more shver.txt | grep Version
+
+root@NetworkAutomation-1:~# more shver.txt | grep 'SUCCESS\|Version'
+
+https://docs.ansible.com/ansible/latest/modules.html
+https://docs.ansible.com/ansible/latest/modules_by_category.html
+https://docs.ansible.com/ansible/latest/raw_module.html
+
+
+Ansible Ad Hoc commands part4:
+==============================
+
+root@NetworkAutomation-1:~# ansible all -i gns3hosts -m raw -a "show arp" -u ashu -k 
+
+root@NetworkAutomation-1:~# ansible all -i gns3hosts -m raw -a "show arp" -u ashu -k | grep 71
+
+root@NetworkAutomation-1:~# ansible all -i gns3hosts -m raw -a "show arp" -u ashu -k | grep 'SUCCESS\|71'
+
+root@NetworkAutomation-1:~# ansible all -i gns3hosts -m raw -a "show arp" -u ashu -k | grep 'SUCCESS\|\.71'
+
+root@NetworkAutomation-1:~# ansible all -i gns3hosts -m raw -a "show mac address-table" -u ashu -k 
+
+root@NetworkAutomation-1:~# ansible all -i gns3hosts -m raw -a "show mac address-table" -u ashu -k | grep 7a
+
+root@NetworkAutomation-1:~# ansible all -i gns3hosts -m raw -a "show mac address-table" -u ashu -k | grep 'SUCCESS\|fe7a'
+
+https://docs.ansible.com/ansible/latest/modules.html
+https://docs.ansible.com/ansible/latest/modules_by_category.html
+https://docs.ansible.com/ansible/latest/raw_module.html
+
+
+Ansible Ad Hoc commands part5:
+==============================
+
+root@NetworkAutomation-1:~# ansible all -i gns3hosts -m raw -a "show mac address-table" -u ashu -k | grep 'SUCCESS\|fe7a'
+
+root@NetworkAutomation-1:~# cat gns3hosts
+
+https://docs.ansible.com/ansible/latest/modules.html
+https://docs.ansible.com/ansible/latest/modules_by_category.html
+https://docs.ansible.com/ansible/latest/raw_module.html
+
+
+4000032962
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
